@@ -14,6 +14,30 @@ from django_vue_generator.utils import (
 )
 from django_vue_generator.forms import generate_vue_form
 
+ESLINT_CONFIG = """{
+    "env": {
+        "browser": true,
+        "es6": true
+    },
+    "extends": [
+        "eslint:recommended",
+        "plugin:vue/essential"
+    ],
+    "globals": {
+        "Atomics": "readonly",
+        "SharedArrayBuffer": "readonly"
+    },
+    "parserOptions": {
+        "ecmaVersion": 2018,
+        "sourceType": "module"
+    },
+    "plugins": [
+        "vue"
+    ],
+    "rules": {
+        { "no-unused-vars": "off" } 
+    }
+}"""
 
 def prepare(force=False):
     with cd_back():
@@ -49,6 +73,8 @@ def prepare(force=False):
         run("touch __init__.py")
         run("mkdir -p templates/frontend")
         run("mkdir -p static/frontend")
+        with overwrite('.eslintrc.json') as f:
+            f.write(ESLINT_CONFIG)
         with overwrite("templates/index.html", force) as f:
             f.write("""Please run ./manage.py build_frontend""")
         with overwrite("urls.py", force) as f:
