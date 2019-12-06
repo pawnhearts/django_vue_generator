@@ -16,8 +16,6 @@ from django_vue_generator.forms import generate_vue_form
 
 
 def prepare(force=False):
-    if force:
-        overwrite = lambda path: open(path, 'w')
     with cd_back():
         if not run("which vue", True):
             if not run("which yarn", True):
@@ -51,9 +49,9 @@ def prepare(force=False):
         run("touch __init__.py")
         run("mkdir -p templates/frontend")
         run("mkdir -p static/frontend")
-        with overwrite("templates/index.html") as f:
+        with overwrite("templates/index.html", force) as f:
             f.write("""Please run ./manage.py build_frontend""")
-        with overwrite("urls.py") as f:
+        with overwrite("urls.py", force) as f:
             f.write(
                 """from django.urls import path, include
 from django.views.generic import TemplateView

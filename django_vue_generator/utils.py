@@ -52,8 +52,8 @@ def replace_in_file(path, placeholder, new_data):
             f.write(text)
 
 
-def overwrite(path):
-    if os.path.exists(path) and input(f"File {path} exists. Overwrite y/n?") != "y":
+def overwrite(path, force=False):
+    if not force and os.path.exists(path) and input(f"File {path} exists. Overwrite y/n?") != "y":
         return open(os.devnull, "w")
     else:
         return open(path, "w")
