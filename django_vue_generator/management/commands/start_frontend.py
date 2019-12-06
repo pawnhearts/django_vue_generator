@@ -15,7 +15,9 @@ from django_vue_generator.utils import (
 from django_vue_generator.forms import generate_vue_form
 
 
-def prepare():
+def prepare(force=False):
+    if force:
+        overwrite = lambda path: open(path, 'w')
     with cd_back():
         if not run("which vue", True):
             if not run("which yarn", True):
@@ -27,7 +29,7 @@ def prepare():
         run("yarn global list|grep vue-beautify || yarn global add vue-beautify js-beautify")
         yarn_path = ':'.join(os.popen('yarn global bin && yarn bin').read().splitlines())
         os.environ['PATH'] = f"{yarn_path}:{os.environ['PATH']}"
-        fail("vue create -m yarn -n -p default frontend")
+        fail(f"vue create -m yarn -n -p default frontend{' -f' if force else ''}")
     with cd_back("frontend/"):
         run("yarn add vuelidate")
         run("yarn add vue-resource")
@@ -44,7 +46,7 @@ def prepare():
         replace_in_file(
             "package.json",
             'vue-cli-service build',
-            r""" && (rm -rf static/frontend/ 2>/dev/null || true) && sed 's/href=\//href=\/static\//g' dist/index.html > templates/frontend/index.html && mv dist static/frontend""",
+            r""" && (rm -rf static/frontend/ 2>/dev/null || true) && sed 's/href=\\//href=\/static\\//g' dist/index.html > templates/frontend/index.html && mv dist static/frontend""",
         )
         run("touch __init__.py")
         run("mkdir -p templates/frontend")
@@ -88,8 +90,11 @@ urlpatterns = [
 class Command(BaseCommand):
     help = "Generate vue frontend"
 
+    def add_arguments(self, parser):
+        parser.add_argument('--force', help='Overwrite everything', action='store_true')
+
     def handle(self, *args, **options):
-        prepare()
+        prepare(options['force'])
         from rest_framework.viewsets import ModelViewSet
 
         for viewset in ModelViewSet.__subclasses__():
