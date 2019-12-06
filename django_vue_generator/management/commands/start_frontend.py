@@ -35,7 +35,7 @@ ESLINT_CONFIG = """{
         "vue"
     ],
     "rules": {
-        { "no-unused-vars": "off" } 
+        "no-unused-vars": "off"
     }
 }"""
 
@@ -68,12 +68,12 @@ def prepare(force=False):
         replace_in_file(
             "package.json",
             'vue-cli-service build',
-            r""" && (rm -rf static/frontend/ 2>/dev/null || true) && sed 's/href=\\//href=\\/static\\//g' dist/index.html > templates/frontend/index.html && mv dist static/frontend""",
+            r""" && (rm -rf static/frontend/ 2>/dev/null || true) && sed 's/href=\\//href=\\/static\\/frontend\\//g' dist/index.html > templates/frontend/index.html && mv dist static/frontend""",
         )
         run("touch __init__.py")
         run("mkdir -p templates/frontend")
         run("mkdir -p static/frontend")
-        with overwrite('.eslintrc.json') as f:
+        with overwrite('.eslintrc.json', force) as f:
             f.write(ESLINT_CONFIG)
         with overwrite("templates/index.html", force) as f:
             f.write("""Please run ./manage.py build_frontend""")
