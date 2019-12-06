@@ -188,9 +188,14 @@ export default {{
         yield f"""list(filters) {{
         this.$http.get('{list_url}', filters).then(r => r.json()).then(r => {{this.results = r.results;}});
         }},"""
-    yield f"""
-  }}
-    }};
+    yield """
+  },
+  mounted() {
+    if(this.pk) {
+        this.fetch(this.pk);
+    }
+  }
+    };
     </script>"""
 
 
