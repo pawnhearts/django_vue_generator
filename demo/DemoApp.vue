@@ -1,0 +1,30 @@
+<template>
+  <div id="app">
+    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <BookForm :pk="1" :on_success="alert"></BookForm>
+  </div>
+</template>
+
+<script>
+import HelloWorld from './components/HelloWorld.vue'
+import BookForm from "./components/Book";
+
+export default {
+  name: 'app',
+  components: {
+    BookForm,
+    HelloWorld
+  }
+}
+</script>
+
+<style>
+#app {
+  font-family: 'Avenir', Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-align: center;
+  color: #2c3e50;
+  margin-top: 60px;
+}
+</style>

@@ -121,7 +121,7 @@ export default {{
     }
     }
   },
-  props: ['pk'],
+  props: ['pk', 'on_success'],
   watch: {
     pk: (newVal, oldVal) => {if(this.fetch) this.fetch(newVal);}
   },
@@ -177,8 +177,9 @@ export default {{
         this.$http.put(`{retrieve_url}/${{this.form.id}}/`, {{...this.form}}).then(r => r.json()).then(
         r => {{
             this.serverErrors = {{}};
-            this.form = r.body;
-            this.pk = r.body.{pk_name};
+            this.form = r;
+            this.pk = r.{pk_name};
+            if(this.on_success) this.on_success(r.body);
         }},
         err => {{
             this.serverErrors = err.body;
@@ -192,8 +193,9 @@ export default {{
         this.$http.post('{list_url}', {{...this.form}}).then(r => r.json()).then(
             r => {{
                 this.serverErrors = {{}};
-                this.form = r.body;
-                this.pk = r.body.{pk_name};
+                this.form = r;
+                this.pk = r.{pk_name};
+                if(this.on_success) this.on_success(r.body);
             }},
             err => {{
                 this.serverErrors = err.body;
