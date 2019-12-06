@@ -1,8 +1,7 @@
 <template>
   <div id="app">
     <HelloWorld msg="Welcome to Your Vue.js App"/>
-    <h1 v-if="success">{{success}}</h1>
-    <BookForm :pk="1" :on_success="alert"></BookForm>
+    <BookForm :pk="1" @success="on_success"></BookForm>
   </div>
 </template>
 
@@ -12,16 +11,13 @@ import BookForm from "./components/Book";
 
 export default {
   name: 'app',
-  data() {
-    return {success: false};
-  },
   components: {
     BookForm,
     HelloWorld
   },
   methods:{
     on_success: (obj) => {
-      this.success = obj;
+      alert(JSON.stringify(obj));
     }
   }
 }

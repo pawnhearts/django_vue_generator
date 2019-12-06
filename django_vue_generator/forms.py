@@ -121,7 +121,7 @@ export default {{
     }
     }
   },
-  props: ['pk', 'on_success'],
+  props: ['pk'],
   watch: {
     pk: (newVal, oldVal) => {if(this.fetch) this.fetch(newVal);}
   },
@@ -179,7 +179,7 @@ export default {{
             this.serverErrors = {{}};
             this.form = r;
             this.pk = r.{pk_name};
-            if(this.on_success) this.on_success(r);
+            this.$emit('success', r);
         }},
         err => {{
             this.serverErrors = err.body;
@@ -195,7 +195,7 @@ export default {{
                 this.serverErrors = {{}};
                 this.form = r;
                 this.pk = r.{pk_name};
-                if(this.on_success) this.on_success(r);
+                this.$emit('success', r);
             }},
             err => {{
                 this.serverErrors = err.body;
