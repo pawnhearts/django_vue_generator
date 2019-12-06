@@ -44,7 +44,7 @@ def prepare(force=False):
         replace_in_file(
             "package.json",
             'vue-cli-service build',
-            r""" && (rm -rf static/frontend/ 2>/dev/null || true) && sed 's/href=\\//href=\/static\\//g' dist/index.html > templates/frontend/index.html && mv dist static/frontend""",
+            r""" && (rm -rf static/frontend/ 2>/dev/null || true) && sed 's/href=\\//href=\\/static\\//g' dist/index.html > templates/frontend/index.html && mv dist static/frontend""",
         )
         run("touch __init__.py")
         run("mkdir -p templates/frontend")
