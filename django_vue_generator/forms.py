@@ -54,6 +54,7 @@ def _vue_form_generator(viewset):
         retrieve_url = retrieve_url and retrieve_url[0][0][0][0].rsplit("/", 2)[0]
         serializer = viewset().get_serializer_class()
     model_name = serializer.Meta.model._meta.model_name
+    pk_name = serializer.Meta.model._meta.pk.name
     component_name = f"{model_name.title()}Form"
     yield """<template>
     <div class="form pt-6">
@@ -79,7 +80,7 @@ def _vue_form_generator(viewset):
               <label class="mr-2 font-bold text-grey">{field.label}</label>"""
         yield f"""<{tag}{input_type} name="{name}" v-model="form.{name}"{'' if hasattr(field, 'iter_options') else '/'}>"""
         if hasattr(field, "iter_options"):
-            yield f"""<option :value="k" :text="v" v-for="(v, k) in form.{name}_options" :key="k"></option>"""
+            yield f"""<option :value="k" v-for="(v, k) in form.{name}_options" :key="k">{{{{v}}}}</option>"""
             yield f"""</{tag.split()[0]}>"""
         if not field.read_only:
             yield """\n</div>"""
@@ -114,6 +115,10 @@ export default {{
     }
     }
   },
+  props: ['pk'],
+  watch: {
+    pk: (newVal, oldVal) => {if(this.fetch) this.fetch(newVal);}
+  },
   validations: {
     form: {
     """
@@ -123,7 +128,7 @@ export default {{
         validators = [
             v
             for v in [
-                field.required and "required",
+                field.required and name != pk_name and "required",
                 style.get("input_type", None) in ("number", "url", "email")
                 and f"{style['input_type'].replace('number', 'numeric')}",
                 *[
@@ -143,19 +148,42 @@ export default {{
     submit() {{
       this.$v.form.$touch();
       if(this.$v.form.$error) return
-      // to form submit after this
-      alert('Form submitted')
+      if(this.pk) {{
+        this.update();
+      }} else {{
+       this.create();
+       }}
     }},"""
     if retrieve_url:
-        yield f"""fetch(id) {{
-        this.$http.get(`{retrieve_url}/${{id}}/`).then(r => r.json()).then(r => {{this.form = r;}});
+        yield f"""fetch(pk) {{
+        this.$http.get(`{retrieve_url}/${{pk}}/`).then(r => r.json()).then(r => {{this.form = r;}});
         }},
         update() {{
-        this.$http.put(`{retrieve_url}/${{this.form.id}}`, {{...this.form}}).then(r => r.json()).then(r => {{this.form = r;}});
+        this.$http.put(`{retrieve_url}/${{this.form.id}}`, {{...this.form}}).then(r => r.json()).then(
+        r => {{
+            this.form = r;
+            this.pk = r.{pk_name};
+        }},
+        err => {{
+            Object.keys(err).forEach(key => {{this.$v.form[key].$error = err[key];}})
+            this.$v.$reset();
+            this.$v.$touch();
+        }}
+        );
         }},"""
     if list_url:
         yield f"""create() {{
-        this.$http.post('{list_url}', {{...this.form}}).then(r => r.json()).then(r => {{this.form = r;}});
+        this.$http.post('{list_url}', {{...this.form}}).then(r => r.json()).then(
+            r => {{
+                this.form = r;
+                this.pk = r.{pk_name};
+            }},
+            err => {{
+                Object.keys(err).forEach(key => {{this.$v.form[key].$error = err[key];}})
+                this.$v.$reset();
+                this.$v.$touch();
+            }}
+            );
         }},"""
         yield f"""list(filters) {{
         this.$http.get('{list_url}', filters).then(r => r.json()).then(r => {{this.results = r.results;}});
