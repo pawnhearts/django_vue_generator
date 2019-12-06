@@ -106,7 +106,7 @@ export default {{
 
   data() {{
     return {{
-    serverErrors: null,
+    serverErrors: {{}},
     form: {{
     """
     options = {}
@@ -160,7 +160,7 @@ export default {{
     }},
       methods: {{
     submit() {{
-      this.serverErrors=null;
+      this.serverErrors={{}};
       this.$v.form.$touch();
       if(this.$v.form.$error) return
       if(this.pk) {{
@@ -176,7 +176,7 @@ export default {{
         update() {{
         this.$http.put(`{retrieve_url}/${{this.form.id}}/`, {{...this.form}}).then(r => r.json()).then(
         r => {{
-            this.serverErrors = null;
+            this.serverErrors = {{}};
             this.form = r;
             this.pk = r.{pk_name};
         }},
@@ -191,7 +191,7 @@ export default {{
         yield f"""create() {{
         this.$http.post('{list_url}', {{...this.form}}).then(r => r.json()).then(
             r => {{
-                this.serverErrors = null;
+                this.serverErrors = {{}};
                 this.form = r;
                 this.pk = r.{pk_name};
             }},
