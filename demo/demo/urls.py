@@ -27,3 +27,5 @@ router.register("publishers", PublisherViewSet)
 urlpatterns = [
     path("admin/", admin.site.urls),
 ] + router.urls
+import frontend.urls
+urlpatterns += frontend.urls.urlpatterns

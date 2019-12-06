@@ -23,8 +23,10 @@ def prepare():
                     "which npm", silent=True, msg="Please install yarn or at least npm"
                 )
                 fail("npm i -g yarn")
-        fail("yarn global add vue-cli")
-        run("yarn global add vue-beautify js-beautify")
+        fail(r"yarn global list|grep vue\/cli || yarn global add @vue/cli")
+        run("yarn global list|grep vue-beautify || yarn global add vue-beautify js-beautify")
+        yarn_path = ':'.join(os.popen('yarn global bin && yarn bin').read().splitlines())
+        os.environ['PATH'] = f"{yarn_path}:{os.environ['PATH']}"
         fail("vue create -m yarn -n -p default frontend")
     with cd_back("frontend/"):
         run("yarn add vuelidate")
@@ -32,17 +34,17 @@ def prepare():
         replace_in_file(
             "src/main.js",
             "import Vue from 'vue'",
-            """import Vuelidate from 'vuelidate'\nVue.use(Vuelidate)""",
+            """\nimport Vuelidate from 'vuelidate'\nVue.use(Vuelidate)\n""",
         )
         replace_in_file(
             "src/main.js",
             "import Vue from 'vue'",
-            """import VueResource from 'vue-resource'\nVue.use(VueResource)""",
+            """\nimport VueResource from 'vue-resource'\nVue.use(VueResource)\n""",
         )
         replace_in_file(
             "package.json",
-            "vue-cli-service build",
-            """ && (rm -rf static/frontend/ 2>/dev/null || true) && sed 's/href=\//href=\/static\//g' dist/index.html > templates/frontend/index.html && mv dist static/frontend""",
+            'vue-cli-service build',
+            r""" && (rm -rf static/frontend/ 2>/dev/null || true) && sed 's/href=\//href=\/static\//g' dist/index.html > templates/frontend/index.html && mv dist static/frontend""",
         )
         run("touch __init__.py")
         run("mkdir -p templates/frontend")

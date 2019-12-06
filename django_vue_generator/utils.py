@@ -47,7 +47,7 @@ def replace_in_file(path, placeholder, new_data):
     with open(path, "r") as f:
         text = f.read()
     if new_data not in text:
-        text = text.replace(placeholder, f"{placeholder}\n{new_data.strip()}\n")
+        text = text.replace(placeholder, f"{placeholder}{new_data.strip()}")
         with open(path, "w") as f:
             f.write(text)
 

@@ -5,8 +5,7 @@ pip install -r requirements.txt &&
 python manage.py migrate &&
 python manage.py loaddata demo &&
 python manage.py start_frontend &&
-echo "INSTALLED_APPS += ['frontend'] " >>demo/settings.py &&
-echo "from frontend import urls" >>demo/urls.py &&
-echo "urlpatterns += frontend.urlpatterns" >>demo/urls.py &&
+grep frontend demo/settings.py || echo "INSTALLED_APPS += ['frontend'] " >>demo/settings.py &&
+grep frontend demo/urls.py || (echo "import frontend.urls" && echo "urlpatterns += frontend.urls.urlpatterns") >>demo/urls.py &&
 python manage.py build_frontend &&
 python manage.py runserver
