@@ -125,11 +125,11 @@ export default {{
   watch: {
     pk: (newVal, oldVal) => {if(this.fetch) this.fetch(newVal);}
   },
-  validations(): {
+  validations() {
     if(this.serverErrors) {
-        let serverValidator = {};
+        let serverValidator = {form:{}};
         Object.keys(this.serverErrors).forEach(key => {
-            serverValidator[key] = {alwaysInvalid};
+            serverValidator.form[key] = {alwaysInvalid};
         });
         return serverValidator;
     } else { return {form: {
@@ -154,7 +154,8 @@ export default {{
         ]
         yield f"""{name}: {{{', '.join(validators)}}},"""
 
-    yield f"""}};
+    yield f"""}}
+    }};
     }}
     }},
       methods: {{
