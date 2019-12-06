@@ -75,8 +75,8 @@ def _vue_form_generator(viewset):
             input_type = ' type="hidden"'
         else:
             yield f"""<div
-               class="px-4"
                :class="{{ 'hasError': $v.form.{name}.$error }}">
+               <strong v-if="serverErrors[{name}] :content="serverErrors[{name}]"></strong>
               <label class="mr-2 font-bold text-grey">{field.label}</label>"""
         yield f"""<{tag}{input_type} name="{name}" v-model="form.{name}"{'' if hasattr(field, 'iter_options') else '/'}>"""
         if hasattr(field, "iter_options"):
