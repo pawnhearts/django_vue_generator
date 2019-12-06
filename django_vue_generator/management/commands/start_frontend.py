@@ -42,7 +42,7 @@ def prepare():
         replace_in_file(
             "package.json",
             "vue-cli-service build",
-            """ && rm -rf static/frontend/ 2>/dev/null && sed 's/href=\//href=\/static\//g' dist/index.html > templates/frontend/index.html && mv dist static/frontend""",
+            """ && (rm -rf static/frontend/ 2>/dev/null || true) && sed 's/href=\//href=\/static\//g' dist/index.html > templates/frontend/index.html && mv dist static/frontend""",
         )
         run("touch __init__.py")
         run("mkdir -p templates/frontend")
@@ -55,7 +55,7 @@ def prepare():
 from django.views.generic import TemplateView
 
 urlpatterns = [
-    path('', TemplateView(template_name='frontend/index.html').as_view(), name='frontend-index'),
+    path('', TemplateView.as_view(template_name='frontend/index.html'), name='frontend-index'),
 ]
 """
             )
