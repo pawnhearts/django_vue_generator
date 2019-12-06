@@ -6,3 +6,5 @@ TODO:
 
 - generate forms for your filters.
 - work with other generic views, not just viewsets
+- error descriptions
+- css
