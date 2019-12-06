@@ -215,7 +215,9 @@ export default {{
     };
     </script>"""
 
-
+    yield """<style>
+    .hasError{background-color:red;} 
+    </style>"""
 #     yield """<style lang="scss" scoped>
 #    @import 'form.scss'
 # </style>"""
