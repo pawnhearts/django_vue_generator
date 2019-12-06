@@ -1,0 +1,4 @@
+django==2.*,>=2.2.0
+django-filters==0.*,>=0.2.1
+djangorestframework==3.*,>=3.10.0
+django_vue_generator
