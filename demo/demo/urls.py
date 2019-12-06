@@ -28,6 +28,8 @@ urlpatterns = [
     path("admin/", admin.site.urls),
 ] + router.urls
 
-if os.path.exists('frontend'):
+try:
     import frontend.urls
     urlpatterns = frontend.urls.urlpatterns + urlpatterns
+except ImportError:
+    pass

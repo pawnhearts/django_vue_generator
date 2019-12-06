@@ -75,7 +75,7 @@ def _vue_form_generator(viewset):
         else:
             yield f"""<div
                class="px-4"
-               :class="{{ 'hasError': $v.form.name.$error }}">
+               :class="{{ 'hasError': $v.form.{name}.$error }}">
               <label class="mr-2 font-bold text-grey">{field.label}</label>"""
         yield f"""<{tag}{input_type} name="{name}" v-model="form.{name}"{'' if hasattr(field, 'iter_options') else '/'}>"""
         if hasattr(field, "iter_options"):
@@ -94,6 +94,9 @@ def _vue_form_generator(viewset):
   </template>
     <script>
     import {{required, numeric, maxValue, minValue, maxLength, minLength, url, email}} from "vuelidate/lib/validators";
+    import Vuelidate from 'vuelidate';
+    import Vue from 'vue'
+    Vue.use(Vuelidate);
 
 export default {{
   name: "{component_name}",
@@ -132,8 +135,7 @@ export default {{
             ]
             if v
         ]
-        if validators:
-            yield f"""{name}: {{{', '.join(validators)}}},"""
+        yield f"""{name}: {{{', '.join(validators)}}},"""
 
     yield f"""}}
     }},
