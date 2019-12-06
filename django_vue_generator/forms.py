@@ -128,8 +128,8 @@ export default {{
   validations() {
     if(this.serverErrors) {
         let serverValidator = {form:{}};
-        Object.keys(this.serverErrors).forEach(key => {
-            serverValidator.form[key] = {alwaysInvalid};
+        Object.keys(this.form).forEach(key => {
+            serverValidator.form[key] = this.serverErrors[key]?{alwaysInvalid}:{};
         });
         return serverValidator;
     } else { return {form: {
