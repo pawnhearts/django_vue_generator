@@ -26,7 +26,7 @@ default_style = ClassLookupDict(
         serializers.ListSerializer: {"tag": "list_fieldset"},
         serializers.ListField: {"tag": "list_field"},
         serializers.DictField: {"tag": "dict_field"},
-        serializers.FilePathField: {"tag": "input", "input_type": "file",},
+        serializers.FilePathField: {"tag": "input", "input_type": "file"},
         serializers.JSONField: {"tag": "textarea",},
     }
 )
@@ -66,6 +66,8 @@ def _vue_form_generator(viewset):
     for name, field in serializer().fields.items():
         style = default_style[field]
         tag = style["tag"]
+        if style.get('input_type', '') == 'file':
+            continue
         input_type = ("input_type" in style) and f' type="{style["input_type"]}"' or ""
         if field.read_only:
             tag = "input"
