@@ -160,6 +160,7 @@ export default {{
     }},
       methods: {{
     submit() {{
+      this.serverErrors=null;
       this.$v.form.$touch();
       if(this.$v.form.$error) return
       if(this.pk) {{
