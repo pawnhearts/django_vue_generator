@@ -80,7 +80,7 @@ def _vue_form_generator(viewset):
               <label class="mr-2 font-bold text-grey">{field.label}</label>"""
         yield f"""<{tag}{input_type} name="{name}" v-model="form.{name}"{'' if hasattr(field, 'iter_options') else '/'}>"""
         if hasattr(field, "iter_options"):
-            yield f"""<option :value="k" v-for="(v, k) in form.{name}_options" :key="k">{{{{v}}}}</option>"""
+            yield f"""<option :value="k" v-for="(v, k) in options.{name}" :key="k">{{{{v}}}}</option>"""
             yield f"""</{tag.split()[0]}>"""
         if not field.read_only:
             yield """\n</div>"""
@@ -99,18 +99,24 @@ def _vue_form_generator(viewset):
     import Vue from 'vue'
     Vue.use(Vuelidate);
 
+const alwaysInvalid = (value) => false;
+
 export default {{
   name: "{component_name}",
 
   data() {{
     return {{
+    serverErrors: null,
     form: {{
     """
+    options = {}
     for name, field in serializer().fields.items():
         yield f"""{name}: '',"""
         if hasattr(field, "iter_options"):
-            opts = {opt.value: opt.display_text for opt in field.iter_options()}
-            yield f"""{name}_options: {opts},"""
+            options[name] = {opt.value: opt.display_text for opt in field.iter_options()}
+    yield "}, options: {"
+    for name, opts in options.items():
+        yield f"""{name}: {opts},"""
     yield """
     }
     }
@@ -119,8 +125,14 @@ export default {{
   watch: {
     pk: (newVal, oldVal) => {if(this.fetch) this.fetch(newVal);}
   },
-  validations: {
-    form: {
+  validations(): {
+    if(this.serverErrors) {
+        let serverValidator = {};
+        Object.keys(this.serverErrors).forEach(key => {
+            serverValidator[key] = {alwaysInvalid};
+        });
+        return serverValidator;
+    } else { return {form: {
     """
 
     for name, field in serializer().fields.items():
@@ -142,7 +154,8 @@ export default {{
         ]
         yield f"""{name}: {{{', '.join(validators)}}},"""
 
-    yield f"""}}
+    yield f"""}};
+    }}
     }},
       methods: {{
     submit() {{
@@ -159,13 +172,14 @@ export default {{
         this.$http.get(`{retrieve_url}/${{pk}}/`).then(r => r.json()).then(r => {{this.form = r;}});
         }},
         update() {{
-        this.$http.put(`{retrieve_url}/${{this.form.id}}`, {{...this.form}}).then(r => r.json()).then(
+        this.$http.put(`{retrieve_url}/${{this.form.id}}/`, {{...this.form}}).then(r => r.json()).then(
         r => {{
+            this.serverErrors = null;
             this.form = r;
             this.pk = r.{pk_name};
         }},
         err => {{
-            Object.keys(err).forEach(key => {{this.$v.form[key].$error = err[key];}})
+            this.serverErrors = err;
             this.$v.$reset();
             this.$v.$touch();
         }}
@@ -175,11 +189,12 @@ export default {{
         yield f"""create() {{
         this.$http.post('{list_url}', {{...this.form}}).then(r => r.json()).then(
             r => {{
+                this.serverErrors = null;
                 this.form = r;
                 this.pk = r.{pk_name};
             }},
             err => {{
-                Object.keys(err).forEach(key => {{this.$v.form[key].$error = err[key];}})
+                this.serverErrors = err;
                 this.$v.$reset();
                 this.$v.$touch();
             }}
