@@ -13,9 +13,9 @@ class AuthorViewSet(viewsets.ModelViewSet):
     queryset = Author.objects.all()
     serializer_class = get_serializer_class(Author)
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['book_set']
+    filterset_fields = ["book_set"]
+
 
 class PublisherViewSet(viewsets.ModelViewSet):
     queryset = Publisher.objects.all()
     serializer_class = get_serializer_class(Publisher)
-

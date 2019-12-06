@@ -10,6 +10,6 @@ class Command(BaseCommand):
     help = "Build frontend"
 
     def handle(self, *args, **options):
-        with cd_back('frontend/'):
-            fail('yarn build')
-        management.call_command('collectstatic')
+        with cd_back("frontend/"):
+            fail("yarn build")
+        management.call_command("collectstatic")

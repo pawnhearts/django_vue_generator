@@ -21,11 +21,11 @@ from app.views import *
 from frontend import urls
 
 router = DefaultRouter()
-router.register('books', BookViewSet, 'books')
-router.register('authors', AuthorViewSet)
-router.register('publishers', PublisherViewSet)
+router.register("books", BookViewSet, "books")
+router.register("authors", AuthorViewSet)
+router.register("publishers", PublisherViewSet)
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('', urls.urlpatterns),
+    path("admin/", admin.site.urls),
+    path("", urls.urlpatterns),
 ] + router.urls

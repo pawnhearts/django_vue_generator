@@ -3,11 +3,11 @@ from django.db import models
 from django.utils.translation import ugettext, ugettext_lazy as _
 
 
-BOOK_PUBLISHING_STATUS_PUBLISHED = 'published'
-BOOK_PUBLISHING_STATUS_NOT_PUBLISHED = 'not_published'
-BOOK_PUBLISHING_STATUS_IN_PROGRESS = 'in_progress'
-BOOK_PUBLISHING_STATUS_CANCELLED = 'cancelled'
-BOOK_PUBLISHING_STATUS_REJECTED = 'rejected'
+BOOK_PUBLISHING_STATUS_PUBLISHED = "published"
+BOOK_PUBLISHING_STATUS_NOT_PUBLISHED = "not_published"
+BOOK_PUBLISHING_STATUS_IN_PROGRESS = "in_progress"
+BOOK_PUBLISHING_STATUS_CANCELLED = "cancelled"
+BOOK_PUBLISHING_STATUS_REJECTED = "rejected"
 BOOK_PUBLISHING_STATUS_CHOICES = (
     (BOOK_PUBLISHING_STATUS_PUBLISHED, "Published"),
     (BOOK_PUBLISHING_STATUS_NOT_PUBLISHED, "Not published"),
@@ -44,7 +44,7 @@ class Author(models.Model):
     salutation = models.CharField(max_length=10)
     name = models.CharField(max_length=200)
     email = models.EmailField()
-    headshot = models.ImageField(upload_to='authors', null=True, blank=True)
+    headshot = models.ImageField(upload_to="authors", null=True, blank=True)
 
     class Meta(object):
         """Meta options."""
@@ -76,19 +76,21 @@ class Book(models.Model):
     title = models.CharField(max_length=100)
     description = models.TextField(null=True, blank=True)
     summary = models.TextField(null=True, blank=True)
-    authors = models.ManyToManyField('app.Author', related_name='books')
-    publisher = models.ForeignKey(Publisher, related_name='books', on_delete=models.CASCADE)
+    authors = models.ManyToManyField("app.Author", related_name="books")
+    publisher = models.ForeignKey(
+        Publisher, related_name="books", on_delete=models.CASCADE
+    )
     publication_date = models.DateField()
-    state = models.CharField(max_length=100,
-                             choices=BOOK_PUBLISHING_STATUS_CHOICES,
-                             default=BOOK_PUBLISHING_STATUS_DEFAULT)
+    state = models.CharField(
+        max_length=100,
+        choices=BOOK_PUBLISHING_STATUS_CHOICES,
+        default=BOOK_PUBLISHING_STATUS_DEFAULT,
+    )
     isbn = models.CharField(max_length=100, unique=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     pages = models.PositiveIntegerField(default=200)
     stock_count = models.PositiveIntegerField(default=30)
-    tags = models.ManyToManyField('app.Tag',
-                                  related_name='books',
-                                  blank=True)
+    tags = models.ManyToManyField("app.Tag", related_name="books", blank=True)
 
     class Meta(object):
         """Meta options."""
@@ -106,4 +108,3 @@ class Book(models.Model):
         """
         if self.publisher is not None:
             return self.publisher.name
-

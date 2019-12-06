@@ -14,9 +14,9 @@ class Command(BaseCommand):
             "args",
             metavar="viewset",
             nargs="+",
-            help='''ViewSet or serializer class. 
+            help="""ViewSet or serializer class. 
             For example:
-            ./manage.py generate_vue_form "myapp.serializers.BookSerializer" > frontend/src/components/BookForm.vue''',
+            ./manage.py generate_vue_form "myapp.serializers.BookSerializer" > frontend/src/components/BookForm.vue""",
         )
 
     def handle(self, *args, **options):
