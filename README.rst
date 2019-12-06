@@ -8,4 +8,5 @@ TODO:
 - work with other generic views, not just viewsets
 - error descriptions
 - css
-- load choices from related fields from api
+- load choices from related fields from api(options)
+- better demo
