@@ -18,7 +18,6 @@ from django.urls import path, include
 from django.conf.urls.static import static
 from rest_framework.routers import DefaultRouter
 from app.views import *
-from frontend import urls
 
 router = DefaultRouter()
 router.register("books", BookViewSet, "books")
@@ -27,5 +26,4 @@ router.register("publishers", PublisherViewSet)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("", urls.urlpatterns),
 ] + router.urls
