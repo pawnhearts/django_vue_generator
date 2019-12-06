@@ -91,7 +91,7 @@ def _vue_form_generator(viewset):
   </div>
   </template>
     <script>
-    import validators from "vuelidate/lib/validators";
+    import {{required, numeric, maxValue, minValue, maxLength, minLength, url, email}} from "vuelidate/lib/validators";
 
 export default {{
   name: "{component_name}",
@@ -118,12 +118,12 @@ export default {{
         validators = [
             v
             for v in [
-                field.required and "validators.required",
+                field.required and "required",
                 style.get("input_type", None) in ("number", "url", "email")
-                and f"validators.{style['input_type'].replace('number', 'numeric')}",
+                and f"{style['input_type'].replace('number', 'numeric')}",
                 *[
                     getattr(field, f"{k}_{f}", None)
-                    and f"{k}: validators.{k}{f.title()}({getattr(field, f'{k}_{f}', None)})"
+                    and f"{k}: {k}{f.title()}({getattr(field, f'{k}_{f}', None)})"
                     for k in ["min", "max"]
                     for f in ["length", "value"]
                 ],
