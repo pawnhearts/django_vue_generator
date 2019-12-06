@@ -179,7 +179,7 @@ export default {{
             this.serverErrors = {{}};
             this.form = r;
             this.pk = r.{pk_name};
-            if(this.on_success) this.on_success(r.body);
+            if(this.on_success) this.on_success(r);
         }},
         err => {{
             this.serverErrors = err.body;
@@ -195,7 +195,7 @@ export default {{
                 this.serverErrors = {{}};
                 this.form = r;
                 this.pk = r.{pk_name};
-                if(this.on_success) this.on_success(r.body);
+                if(this.on_success) this.on_success(r);
             }},
             err => {{
                 this.serverErrors = err.body;
