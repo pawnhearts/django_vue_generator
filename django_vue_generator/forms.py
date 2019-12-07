@@ -2,6 +2,8 @@ from django.urls import get_resolver
 from rest_framework import serializers
 from rest_framework.utils.field_mapping import ClassLookupDict
 
+from django_vue_generator.utils import vuetify
+
 default_style = ClassLookupDict(
     {
         serializers.Field: {"tag": "input", "input_type": "text"},
@@ -68,6 +70,10 @@ class FormGenerator:
     @property
     def component_name(self):
         return f"{self.model_name.title()}Form"
+
+    @property
+    def filename(self):
+        return f"frontend/src/components/{self.component_name}.vue"
 
     @property
     def fields(self):
@@ -253,11 +259,8 @@ class FormGenerator:
             );"""
 
     def render(self):
-        return "\n".join(
-            "\n".join(gen()) for gen in [self.template, self.script, self.style]
+        return vuetify(
+            "\n".join(
+                "\n".join(gen()) for gen in [self.template, self.script, self.style]
+            )
         )
-
-
-def generate_vue_form(viewset):
-    generator = FormGenerator(viewset)
-    return generator.render()

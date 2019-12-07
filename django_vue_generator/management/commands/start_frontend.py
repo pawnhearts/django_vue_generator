@@ -13,7 +13,7 @@ from django_vue_generator.utils import (
     overwrite,
     set_yarn_path,
 )
-from django_vue_generator.forms import generate_vue_form
+from django_vue_generator.forms import FormGenerator
 
 ESLINT_CONFIG = """{
     "env": {
@@ -162,7 +162,6 @@ class Command(BaseCommand):
 
         for viewset in ModelViewSet.__subclasses__():
             name = viewset().get_serializer_class().Meta.model._meta.model_name.title()
-            code = vuetify(generate_vue_form(viewset))
-            path = f"frontend/src/components/{name}Form.vue"
-            with overwrite(path) as f:
-                f.write(code)
+            generator = FormGenerator(viewset)
+            with overwrite(generator.filename) as f:
+                f.write(generator.render())
