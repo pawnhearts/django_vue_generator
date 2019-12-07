@@ -75,7 +75,11 @@ class ListGenerator(VueGenerator):
         yield "mounted()", """this.list(this.filters);"""
 
     def watch(self):
-        yield "filters:", "handler (newVal, oldVal) {this.list(newVal);}, deep: true"
+        yield "filters:", """handler (newVal, oldVal) {
+        if(this.page) this.page=1;
+        if(this.offset) this.offset=0;
+        this.list(newVal);
+        }, deep: true"""
         yield "page ()", "this.list(this.filters);"
         yield "offset ()", "this.list(this.filters);"
 
