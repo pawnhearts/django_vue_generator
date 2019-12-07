@@ -11,3 +11,4 @@ TODO:
 - css
 - load choices from related fields from api(options call, would require modified drf metadata)
 - better demo
+- customization of form generator - styles, should readonly fields be hidden or disabled etc.
