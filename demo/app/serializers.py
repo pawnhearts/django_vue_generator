@@ -28,4 +28,4 @@ BookSerializer = get_serializer_class(
     # publisher=PublisherSerializer(),
     depth=2,
 )
-BookSerializer.Meta.fields = ["id", "title", "authors", "tags", "publisher"]
+BookSerializer.Meta.fields = "__all__"
