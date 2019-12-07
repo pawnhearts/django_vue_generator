@@ -53,7 +53,52 @@ def replace_in_file(path, placeholder, new_data):
 
 
 def overwrite(path, force=False):
-    if not force and os.path.exists(path) and input(f"File {path} exists. Overwrite y/N? ").lower().strip() != "y":
+    if (
+        not force
+        and os.path.exists(path)
+        and input(f"File {path} exists. Overwrite y/N? ").lower().strip() != "y"
+    ):
         return open(os.devnull, "w")
     else:
         return open(path, "w")
+
+
+def set_yarn_path():
+    yarn_path = ":".join(os.popen("yarn global bin && yarn bin").read().splitlines())
+    os.environ["PATH"] = f"{yarn_path}:{os.environ['PATH']}"
+
+
+class Yarn:
+    def __init__(self, use_sudo=False):
+        self.use_sudo = use_sudo
+        if not run("which vue", True):
+            if not run("which yarn", True):
+                fail(
+                    "which npm", silent=True, msg="Please install yarn or at least npm"
+                )
+                print(
+                    "Yarn not installed! Please install it first with your package-manager.\
+                Trying to install it via sudo npm i -g yarn"
+                )
+                fail("sudo npm i -g yarn")
+        yarn_path = ":".join(
+            os.popen("yarn global bin && yarn bin").read().splitlines()
+        )
+        os.environ["PATH"] = f"{yarn_path}:{os.environ['PATH']}"
+
+    def add(self, *packages, globally=False, fail_on_error=False):
+        fail_on_error = fail if fail_on_error else run
+        packages = " ".join(f'"{package}"' for package in packages)
+        if not globally:
+            fail_on_error(f"yarn add {packages}")
+        else:
+            if not run("yarn global list|grep vue-beautify", True):
+                if not self.use_sudo:
+                    run("mkdir -p ~/.yarn-global")
+                    run("yarn config set prefix ~/.yarn-global")
+                fail_on_error(
+                    f"{'sudo ' if self.use_sudo else ''}yarn global add {packages}"
+                )
+
+    def build(self):
+        fail("yarn build")
