@@ -40,6 +40,14 @@ ESLINT_CONFIG = """{
     }
 }"""
 
+URLS = """from django.urls import path, include
+from django.views.generic import TemplateView
+
+urlpatterns = [
+    path('', TemplateView.as_view(template_name='frontend/index.html'), name='frontend-index'),
+]
+"""
+
 WEBPACK_CONFIG = """import webpack from 'webpack';
 
 // Try the environment variable, otherwise use static
@@ -111,15 +119,7 @@ def prepare(force=False, sudo=False):
         with overwrite("templates/index.html", force) as f:
             f.write("""Please run ./manage.py build_frontend""")
         with overwrite("urls.py", force) as f:
-            f.write(
-                """from django.urls import path, include
-from django.views.generic import TemplateView
-
-urlpatterns = [
-    path('', TemplateView.as_view(template_name='frontend/index.html'), name='frontend-index'),
-]
-"""
-            )
+            f.write(URLS)
     print(
         "don't forget to add 'frontend' to INSTALLED_APPS and include frontend.urls to your urlpatterns"
     )
@@ -163,6 +163,6 @@ class Command(BaseCommand):
         for viewset in ModelViewSet.__subclasses__():
             name = viewset().get_serializer_class().Meta.model._meta.model_name.title()
             code = vuetify(generate_vue_form(viewset))
-            path = f"frontend/src/components/{name}.vue"
+            path = f"frontend/src/components/{name}Form.vue"
             with overwrite(path) as f:
                 f.write(code)

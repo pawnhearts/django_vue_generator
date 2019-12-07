@@ -7,7 +7,7 @@
 
 <script>
 import HelloWorld from './components/HelloWorld.vue'
-import BookForm from "./components/Book";
+import BookForm from "./components/BookForm";
 
 export default {
   name: 'app',
