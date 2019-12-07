@@ -94,6 +94,7 @@ class FormGenerator:
                 Submit
               </button>
             </div>
+            </div>
           </form>
         </div>"""
         yield "\n</template>\n"
