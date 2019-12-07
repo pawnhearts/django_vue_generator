@@ -1,19 +1,19 @@
 <template>
   <div id="app">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <BookList></BookList>
     <BookForm :pk="1" @success="on_success"></BookForm>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
 import BookForm from "./components/BookForm";
+import BookList from "./components/BookList";
 
 export default {
   name: 'app',
   components: {
     BookForm,
-    HelloWorld
+    BookList
   },
   methods:{
     on_success: (obj) => {

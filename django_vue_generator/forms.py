@@ -3,6 +3,7 @@ from rest_framework import serializers
 from rest_framework.utils.field_mapping import ClassLookupDict
 
 from django_vue_generator.utils import vuetify
+from django_vue_generator.vue import VueGenerator
 
 default_style = ClassLookupDict(
     {
@@ -34,10 +35,12 @@ default_style = ClassLookupDict(
 )
 
 
-class FormGenerator:
+class FormGenerator(VueGenerator):
+    postfix = "Form"
+
     def __init__(self, viewset):
         if isinstance(viewset, serializers.Serializer):
-            self.serializer = viewset
+            serializer = viewset
             self.list_url = None
             self.retrieve_url = None
         else:
@@ -57,30 +60,10 @@ class FormGenerator:
             self.retrieve_url = (
                 retrieve_url and retrieve_url[0][0][0][0].rsplit("/", 2)[0]
             )
-            self.serializer = viewset().get_serializer_class()
-
-    @property
-    def model_name(self):
-        return self.serializer.Meta.model._meta.model_name
-
-    @property
-    def pk_name(self):
-        return self.serializer.Meta.model._meta.pk.name
-
-    @property
-    def component_name(self):
-        return f"{self.model_name.title()}Form"
-
-    @property
-    def filename(self):
-        return f"frontend/src/components/{self.component_name}.vue"
-
-    @property
-    def fields(self):
-        return self.serializer().fields.items()
+            serializer = viewset().get_serializer_class()
+        super().__init__(serializer)
 
     def template(self):
-        yield "<template>\n"
         yield """<div class="form pt-6">
         <div class="summary text-red" v-if="$v.form.$error">
           Form has errors
@@ -97,13 +80,9 @@ class FormGenerator:
             </div>
           </form>
         </div>"""
-        yield "\n</template>\n"
 
     def style(self):
-        yield """
-        <style>
-        .hasError{background-color:red;} 
-        </style>"""
+        yield """.hasError{background-color:red;} """
 
     def form_fields(self):
         for name, field in self.fields:
@@ -130,48 +109,34 @@ class FormGenerator:
                 yield """\n</div>"""
 
     def script(self):
-        yield """<script>"""
+        yield "props: ['pk'],"
+
+    def imports(self):
         yield """import {required, numeric, maxValue, minValue, maxLength, minLength, url, email} from "vuelidate/lib/validators";
             import Vuelidate from 'vuelidate';
             import Vue from 'vue'
             Vue.use(Vuelidate);
             const alwaysInvalid = (value) => false;
             """
-        yield "export default {"
-        yield f'name: "{self.component_name}",'
-        yield "props: ['pk'],"
-        yield ",\n".join(
-            f"{name} {{\n{value}\n}}" for name, value in self.script_items()
-        )
-        yield """};\n</script>"""
 
     def script_items(self):
-        yield "data()", "\n".join(self.data())
         if self.retrieve_url:
             yield "watch:", """pk: (newVal, oldVal) => {this.fetch(newVal);}"""
             yield "mounted()", """if(this.pk){this.fetch(this.pk);}"""
         yield "validations()", "\n".join(self.validations())
-        yield "methods:", ",".join(
-            f"{name} {{\n{body}\n}}" for name, body in self.methods()
-        )
 
     def data(self):
-        yield """return {
-                serverErrors: {},
-                form: {
-                    """
+        yield "serverErrors", "{}"
         options = {}
+        fields = {}
         for name, field in self.fields:
-            yield f"""{name}: '', """
+            fields[name] = ""
             if hasattr(field, "iter_options"):
                 options[name] = {
                     opt.value: opt.display_text for opt in field.iter_options()
                 }
-        yield "}, options: {"
-        for name, opts in options.items():
-            yield f"""{name}: {opts}, """
-        yield "}"
-        yield "}"
+        yield "form", fields
+        yield "options", options
 
     def validations(self):
         yield """if (this.serverErrors) {
@@ -258,10 +223,3 @@ class FormGenerator:
             yield "list(filters)", f"""this.$http.get('{self.list_url}', filters).then(r => r.json()).then(
             r => {{this.results = r.results;}}
             );"""
-
-    def render(self):
-        return vuetify(
-            "\n".join(
-                "\n".join(gen()) for gen in [self.template, self.script, self.style]
-            )
-        )

@@ -4,6 +4,7 @@ from django.core.management.base import BaseCommand
 from django.core import management
 from django.conf import settings
 
+from django_vue_generator.lists import ListGenerator
 from django_vue_generator.utils import (
     vuetify,
     run,
@@ -162,6 +163,7 @@ class Command(BaseCommand):
 
         for viewset in ModelViewSet.__subclasses__():
             name = viewset().get_serializer_class().Meta.model._meta.model_name.title()
-            generator = FormGenerator(viewset)
-            with overwrite(generator.filename) as f:
-                f.write(generator.render())
+            for GeneratorClass in [FormGenerator, ListGenerator]:
+                generator = GeneratorClass(viewset)
+                with overwrite(generator.filename) as f:
+                    f.write(generator.render())

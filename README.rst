@@ -5,7 +5,7 @@ Generates forms(validated with vuelidate) for your serializers and viewsets and 
 TODO:
 
 - generate forms for your filters.
-- list component with pagination etc
+- pagination for list component etc
 - work with other generic views, not just viewsets
 - error descriptions
 - css

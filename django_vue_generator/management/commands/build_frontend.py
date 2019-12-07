@@ -2,7 +2,6 @@ from django.core.management.base import BaseCommand
 from django.core import management
 import importlib
 
-from django_vue_generator.forms import generate_vue_form
 from django_vue_generator.utils import (
     vuetify,
     cd_back,
