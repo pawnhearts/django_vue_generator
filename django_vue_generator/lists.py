@@ -1,6 +1,5 @@
 from django.urls import get_resolver
 from rest_framework import serializers, pagination
-
 from django_vue_generator.vue import VueGenerator
 
 
@@ -116,3 +115,28 @@ class ListGenerator(VueGenerator):
         j++;
         }
         return res;"""
+
+    # def get_filters(self):
+    #     filters = []
+    #     for backend in self.viewset.filter_backends:
+    #         back = backend()
+    #         if hasattr(back, 'get_filterset'):
+    #             fs = back.get_filterset(self.request, self.queryset, self.view)
+    #             if fs:
+    #                 for n, q in fs.get_filters().items():
+    #                     field = q.field_name.replace('__', '.')
+    #                     lookup = f'${q.lookup_expr}'.replace('exact', 'eq').replace('contains', 'regex')
+    #                     params = {'data_key': repr(field), 'required': q.field.required, 'params': {}}
+    #                     if hasattr(q.field, 'choices'):
+    #                         choices = (q.field.choices() if callable(q.field.choices) else q.field.choices)
+    #                     filters.append({'q': n, 'lookup_field': field, 'params': params})
+    #
+    #                 if getattr(self.viewset, 'ordering_fields', None):
+    #                     filters.append({
+    #                         'q': 'ordering',
+    #                         'lookup_field': None,
+    #                         'validate': {'validate': 'validate.OneOf({})'.format(repr(self.viewset.ordering_fields))},
+    #                         'field_type': 'Str',
+    #                         'params': {}
+    #                     })
+    #     return filters
