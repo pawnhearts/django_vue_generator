@@ -7,6 +7,8 @@ from django_filters.rest_framework import DjangoFilterBackend, OrderingFilter
 class BookViewSet(viewsets.ModelViewSet):
     queryset = Book.objects.all()
     serializer_class = get_serializer_class(Book)
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ["state"]
 
 
 class AuthorViewSet(viewsets.ModelViewSet):

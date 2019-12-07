@@ -6,12 +6,14 @@ from django_vue_generator.vue import VueGenerator
 
 class ListGenerator(VueGenerator):
     postfix = "List"
-    table_tag = "table"
-    row_tag = "tr"
-    column_tag = "td"
-    header_tag = "th"
 
-    def __init__(self, viewset):
+    def __init__(
+        self, viewset, table_tag="table", row_tag="tr", column_tag="td", header_tag="th"
+    ):
+        self.table_tag = table_tag
+        self.row_tag = row_tag
+        self.column_tag = column_tag
+        self.header_tag = header_tag
         if isinstance(viewset, serializers.Serializer):
             serializer = viewset
             self.list_url = None
@@ -39,10 +41,12 @@ class ListGenerator(VueGenerator):
     def template(self):
         yield f'<div class="{self.model_name}_list">'
         yield f"<{self.table_tag}>"
+        yield f'<slot name="header" v-bind:object="object">'
         yield f"<{self.row_tag}>"
         for name, field in self.fields:
             yield f"<{self.header_tag}>{field.label}</{self.header_tag}>"
         yield f"</{self.row_tag}>"
+        yield f"</slot>"
         yield f'<{self.row_tag} v-for="object in objects" :key="object.{self.pk_name}">'
         yield f'<slot name="object" v-bind:object="object">'
         for name, field in self.fields:
@@ -58,12 +62,12 @@ class ListGenerator(VueGenerator):
 
     def script_items(self):
         yield "mounted()", """this.list(this.filters);"""
-        yield "watch:", """filters: (newVal, oldVal) => {this.list(newVal);}"""
+        yield "watch:", """filters: {handler (newVal, oldVal) {this.list(newVal);}, deep: true}"""
 
     def data(self):
         yield "objects", "[]"
 
     def methods(self):
-        yield "list(filters)", f"""this.$http.get('{self.list_url}', {{page: this.page || 1, ...filters}}).then(r => r.json()).then(
+        yield "list(filters)", f"""this.$http.get('{self.list_url}', {{params:{{page: this.page || 1, ...filters}}}}).then(r => r.json()).then(
         r => {{this.objects = r.results?r.results:r;}}
         );"""

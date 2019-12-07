@@ -1,6 +1,14 @@
 <template>
   <div id="app">
-    <BookList></BookList>
+    <select name="state" v-model="filters.state">
+      <option value="">Any</option>
+      <option value="published">Published</option>
+      <option value="not_published">Not published</option>
+      <option value="in_progress">In progress</option>
+      <option value="cancelled">Cancelled</option>
+      <option value="rejected">Rejected</option>
+    </select>
+    <BookList :filters="filters"></BookList>
     <BookForm :pk="1" @success="on_success"></BookForm>
   </div>
 </template>
@@ -14,6 +22,11 @@ export default {
   components: {
     BookForm,
     BookList
+  },
+  data() {
+    return {
+      filters: {'state': ''}
+    }
   },
   methods:{
     on_success: (obj) => {
