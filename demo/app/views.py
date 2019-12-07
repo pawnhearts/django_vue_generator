@@ -1,21 +1,23 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, pagination
+
 from .models import *
-from .serializers import get_serializer_class
+from .serializers import get_serializer_class, BookSerializer, AuthorSerializer
 from django_filters.rest_framework import DjangoFilterBackend, OrderingFilter
 
 
 class BookViewSet(viewsets.ModelViewSet):
     queryset = Book.objects.all()
-    serializer_class = get_serializer_class(Book)
+    serializer_class = BookSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ["state"]
+    pagination_class = pagination.PageNumberPagination
 
 
 class AuthorViewSet(viewsets.ModelViewSet):
     queryset = Author.objects.all()
-    serializer_class = get_serializer_class(Author)
+    serializer_class = AuthorSerializer
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ["book_set"]
+    pagination_class = pagination.LimitOffsetPagination
 
 
 class PublisherViewSet(viewsets.ModelViewSet):

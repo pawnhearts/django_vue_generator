@@ -118,9 +118,9 @@ USE_TZ = True
 STATIC_URL = "/static/"
 STATIC_ROOT = "static/"
 
-# REST_FRAMEWORK = {
-#     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-#     'PAGE_SIZE': 10
-# }
-if os.path.exists('frontend'):
-    INSTALLED_APPS += ['frontend']
+REST_FRAMEWORK = {
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 10,
+}
+if os.path.exists("frontend"):
+    INSTALLED_APPS += ["frontend"]

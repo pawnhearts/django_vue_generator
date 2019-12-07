@@ -121,9 +121,11 @@ class FormGenerator(VueGenerator):
 
     def script_items(self):
         if self.retrieve_url:
-            yield "watch:", """pk: (newVal, oldVal) => {this.fetch(newVal);}"""
             yield "mounted()", """if(this.pk){this.fetch(this.pk);}"""
         yield "validations()", "\n".join(self.validations())
+
+    def watch(self):
+        yield "pk:", """handler (newVal, oldVal) {this.fetch(newVal);}"""
 
     def data(self):
         yield "serverErrors", "{}"

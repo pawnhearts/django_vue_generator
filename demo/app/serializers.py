@@ -13,15 +13,19 @@ def get_serializer_class(model, fields="__all__", **kwargs):
 
 
 TagSerializer = get_serializer_class(Tag, ["id", "title"], depth=2)
-AuthorSerializer = get_serializer_class(Author, ["id", "name", "email"], depth=2)
-AuthorSerializer.Meta.fields = ["id", "name", "email"]
+AuthorSerializer = get_serializer_class(
+    Author,
+    ["id", "name", "email", "books"],
+    books=get_serializer_class(Book, ["id", "title"])(many=True),
+    depth=2,
+)
 PublisherSerializer = get_serializer_class(Publisher)
 BookSerializer = get_serializer_class(
     Book,
     ["authors", "tags"],
-    authors=AuthorSerializer(Author.objects.all(), many=True),
+    authors=get_serializer_class(Author, ["name"])(many=True),
     tags=TagSerializer(many=True),
-    publisher=PublisherSerializer(),
+    # publisher=PublisherSerializer(),
     depth=2,
 )
 BookSerializer.Meta.fields = ["id", "title", "authors", "tags", "publisher"]

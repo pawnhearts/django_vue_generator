@@ -55,6 +55,9 @@ class VueGenerator:
         yield "methods:", ",".join(
             f"{name} {{\n{body}\n}}\n" for name, body in filter(None, self.methods())
         )
+        yield "watch:", ",".join(
+            f"{name} {{\n{body}\n}}\n" for name, body in filter(None, self.watch())
+        )
         yield "computed:", ",".join(
             f"{name}: () => {{\n{body}\n}}\n"
             for name, body in filter(None, self.computed())
@@ -72,6 +75,9 @@ class VueGenerator:
         yield
 
     def methods(self):
+        yield
+
+    def watch(self):
         yield
 
     def computed(self):

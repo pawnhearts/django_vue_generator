@@ -9,6 +9,12 @@
       <option value="rejected">Rejected</option>
     </select>
     <BookList :filters="filters"></BookList>
+      <hr/>
+    <AuthorList>
+      <template v-slot:header><th>Name</th></template>
+      <template v-slot:object="{object}"><td>{{object.name}}<br/><ul><li v-for="book in object.books" :key="book.id">{{book.title}}</li></ul></td></template>
+    </AuthorList>
+      <hr/>
     <BookForm :pk="1" @success="on_success"></BookForm>
   </div>
 </template>
@@ -16,12 +22,14 @@
 <script>
 import BookForm from "./components/BookForm";
 import BookList from "./components/BookList";
+import AuthorList from "./components/AuthorList";
 
 export default {
   name: 'app',
   components: {
     BookForm,
-    BookList
+    BookList,
+    AuthorList
   },
   data() {
     return {
