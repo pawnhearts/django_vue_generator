@@ -1,3 +1,6 @@
+import re
+from collections import defaultdict
+
 from django.urls import get_resolver
 from rest_framework import serializers
 from rest_framework.utils.field_mapping import ClassLookupDict
@@ -99,7 +102,7 @@ class FormGenerator(VueGenerator):
             else:
                 yield f"""<div
                    :class="{{ 'hasError': $v.form.{name}.$error }}">
-                   <strong v-if="serverErrors.{name}">{{{{serverErrors.{name}}}}}</strong>
+                   <strong v-if="errors.{name}">{{{{errors.{name}}}}}</strong>
                   <label class="mr-2 font-bold text-grey">{field.label}</label>"""
             yield f"""<{tag}{input_type} name="{name}" v-model="form.{name}"{'' if hasattr(field, 'iter_options') else '/'}>"""
             if hasattr(field, "iter_options"):
@@ -128,7 +131,8 @@ class FormGenerator(VueGenerator):
         yield "pk:", """handler (newVal, oldVal) {this.fetch(newVal);}"""
 
     def data(self):
-        yield "serverErrors", "{}"
+        yield "serverErrors", "false"
+        yield "errors", "{}"
         options = {}
         fields = {}
         for name, field in self.fields:
@@ -139,12 +143,13 @@ class FormGenerator(VueGenerator):
                 }
         yield "form", fields
         yield "options", options
+        yield "error_messages", self.error_messages()
 
     def validations(self):
         yield """if (this.serverErrors) {
             let serverValidator = {form:{}};
             Object.keys(this.form).forEach(key => {
-                serverValidator.form[key] = this.serverErrors[key]?{alwaysInvalid}: {};
+                serverValidator.form[key] = this.errors[key]?{alwaysInvalid}: {};
             });
             return serverValidator;
             } else {
@@ -167,7 +172,7 @@ class FormGenerator(VueGenerator):
                     and f"{style['input_type'].replace('number', 'numeric')}",
                     *[
                         getattr(field, f"{k}_{f}", None)
-                        and f"{k}: {k}{f.title()}({getattr(field, f'{k}_{f}', None)})"
+                        and f"{k}_{f}: {k}{f.title()}({getattr(field, f'{k}_{f}', None)})"
                         for k in ["min", "max"]
                         for f in ["length", "value"]
                     ],
@@ -178,9 +183,17 @@ class FormGenerator(VueGenerator):
 
     def methods(self):
         yield "submit()", """
-          this.serverErrors={};
+          this.serverErrors=false;
           this.$v.form.$touch();
-          if(this.$v.form.$error) return
+          if(this.$v.form.$error){
+          Object.keys(this.form).forEach(key => {
+            if(!this.$v.form[key].$invalid) return;
+            this.errors[key]=this.error_messages[key][(Object.keys(this.error_messages[key]).find(err => {
+                return (err!=='invalid' && !this.$v.form[key][err]);
+            }) || 'invalid')];
+          });
+           return;
+            }
           if(this.pk) {
             this.update();
           } else {
@@ -194,13 +207,14 @@ class FormGenerator(VueGenerator):
             yield "update()", f"""
             this.$http.put(`{self.retrieve_url}/${{this.pk}}/`, {{...this.form}}).then(r => r.json()).then(
             r => {{
-                this.serverErrors = {{}};
+                this.serverErrors = false;
                 this.form = r;
                 this.pk = r.{self.pk_name};
                 this.$emit('success', r);
             }},
             err => {{
-                this.serverErrors = err.body;
+                this.serverErrors = true;
+                this.errors = err.body;
                 this.$v.$reset();
                 this.$v.$touch();
             }}
@@ -210,13 +224,14 @@ class FormGenerator(VueGenerator):
             yield "create()", f""" 
             this.$http.post('{self.list_url}', {{...this.form}}).then(r => r.json()).then(
                 r => {{
-                    this.serverErrors = {{}};
+                    this.serverErrors = false;
                     this.form = r;
                     this.pk = r.{self.pk_name};
                     this.$emit('success', r);
                 }},
                 err => {{
-                    this.serverErrors = err.body;
+                    this.serverErrors = true;
+                    this.errors = err.body;
                     this.$v.$reset();
                     this.$v.$touch();
                 }}
@@ -225,3 +240,17 @@ class FormGenerator(VueGenerator):
             yield "list(filters)", f"""this.$http.get('{self.list_url}', filters).then(r => r.json()).then(
             r => {{this.results = r.results;}}
             );"""
+
+    def error_messages(self):
+        return {
+            name: {
+                err: msg.format_map(defaultdict(lambda: "", field.__dict__))
+                for err, msg in field.error_messages.items()
+                if re.match("(required|invalid|(min|max)_(value|length))", err)
+                and "None"
+                not in msg.format_map(defaultdict(lambda: "", field.__dict__))
+                and '""' not in msg.format_map(defaultdict(lambda: "", field.__dict__))
+                and not (not field.required and err == "required")
+            }
+            for name, field in self.fields
+        }
