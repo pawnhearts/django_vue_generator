@@ -8,7 +8,7 @@
       <option value="cancelled">Cancelled</option>
       <option value="rejected">Rejected</option>
     </select>
-    <BookList :filters="filters"></BookList>
+    <PublisherForm :filters="filters"></PublisherForm>
       <hr/>
     <AuthorList>
       <template v-slot:header><th>Name</th></template>
@@ -20,15 +20,15 @@
 </template>
 
 <script>
-import BookForm from "./components/BookForm";
-import BookList from "./components/BookList";
+import BookForm from "./components/Book";
+import PublisherForm from "./components/Publisher";
 import AuthorList from "./components/AuthorList";
 
 export default {
   name: 'app',
   components: {
     BookForm,
-    BookList,
+    PublisherForm,
     AuthorList
   },
   data() {
