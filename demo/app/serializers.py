@@ -22,9 +22,9 @@ AuthorSerializer = get_serializer_class(
 PublisherSerializer = get_serializer_class(Publisher)
 BookSerializer = get_serializer_class(
     Book,
-    ["authors", "tags"],
-    authors=get_serializer_class(Author, ["name"])(many=True),
-    tags=TagSerializer(many=True),
+    # ["authors"],
+    # authors=get_serializer_class(Author, ["name"])(many=True),
+    # tags=TagSerializer(many=True),
     # publisher=PublisherSerializer(),
     depth=2,
 )
