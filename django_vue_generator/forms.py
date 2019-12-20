@@ -6,7 +6,7 @@ from rest_framework import serializers
 from rest_framework.utils.field_mapping import ClassLookupDict
 
 from django_vue_generator.utils import vuetify
-from django_vue_generator.vue import VueGenerator
+from django_vue_generator.vue import Vue, js_func, py_to_js, js_str
 
 default_style = ClassLookupDict(
     {
@@ -38,7 +38,7 @@ default_style = ClassLookupDict(
 )
 
 
-class FormGenerator(VueGenerator):
+class VueForm(Vue):
     postfix = "Form"
 
     def __init__(self, viewset):
@@ -64,18 +64,22 @@ class FormGenerator(VueGenerator):
                 retrieve_url and retrieve_url[0][0][0][0].rsplit("/", 2)[0]
             )
             serializer = viewset().get_serializer_class()
-        super().__init__(serializer)
+        self.serializer = serializer
+        self.model_name = self.serializer.Meta.model._meta.model_name
+        self.pk_name = self.serializer.Meta.model._meta.pk.name
+        self.component_name = f"{self.model_name.title()}{self.postfix}"
+        self.filename = f"frontend/src/components/{self.component_name}.vue"
+        self.fields = self.serializer().fields.items()
 
     def template(self):
-        yield """<div class="form pt-6">
+        return f"""<div class="form pt-6">
         <div class="summary text-red" v-if="$v.form.$error">
           Form has errors
         </div>
         <form @submit.prevent="submit">
           <div class="flex justify-center my-6">
-        """
-        yield from self.form_fields()
-        yield f"""<div class="text-center">
+          {''.join(self.form_fields())}
+          <div class="text-center">
               <button type="submit" class="button">
                 Submit
               </button>
@@ -85,7 +89,7 @@ class FormGenerator(VueGenerator):
         </div>"""
 
     def style(self):
-        yield """.hasError{background-color:red;} """
+        """.hasError{background-color:red;} """
 
     def form_fields(self):
         for name, field in self.fields:
@@ -111,28 +115,22 @@ class FormGenerator(VueGenerator):
             if not field.read_only:
                 yield """\n</div>"""
 
-    def script(self):
-        yield "props: ['pk'],"
+    props = ["pk"]
 
-    def imports(self):
-        yield """import {required, numeric, maxValue, minValue, maxLength, minLength, url, email} from "vuelidate/lib/validators";
+    imports = """import {required, numeric, maxValue, minValue, maxLength, minLength, url, email} from "vuelidate/lib/validators";
             import Vuelidate from 'vuelidate';
             import Vue from 'vue'
             Vue.use(Vuelidate);
             const alwaysInvalid = (value) => false;
             """
 
-    def script_items(self):
-        if self.retrieve_url:
-            yield "mounted()", """if(this.pk){this.fetch(this.pk);}"""
-        yield "validations()", "\n".join(self.validations())
+    mounted = "if(this.pk){this.fetch(this.pk);}"
+    # validations = ", "\n".join(self.validations())
 
-    def watch(self):
-        yield "pk:", """handler (newVal, oldVal) {this.fetch(newVal);}"""
+    watch = {"pk": "this.fetch(newVal);"}
 
+    @property
     def data(self):
-        yield "serverErrors", "false"
-        yield "errors", "{}"
         options = {}
         fields = {}
         for name, field in self.fields:
@@ -141,25 +139,30 @@ class FormGenerator(VueGenerator):
                 options[name] = {
                     opt.value: opt.display_text for opt in field.iter_options()
                 }
-        yield "form", fields
-        yield "options", options
-        yield "error_messages", self.error_messages()
+        return {
+            "serverErrors": False,
+            "errors": {},
+            "form": fields,
+            "options": options,
+            "error_messages": self.error_messages(),
+        }
 
+    @property
     def validations(self):
-        yield """if (this.serverErrors) {
+        return js_func(
+            "",
+            """if (this.serverErrors) {
             let serverValidator = {form:{}};
             Object.keys(this.form).forEach(key => {
                 serverValidator.form[key] = this.errors[key]?{alwaysInvalid}: {};
             });
             return serverValidator;
             } else {
-            return {form: {
-            """
-        yield ",\n".join(
-            f'"{name}": {{{validators}}}'
-            for name, validators in self.validation_items()
+                return {form: %s};
+            }
+        """
+            % py_to_js(self.validation_items()),
         )
-        yield """}};}"""
 
     def validation_items(self):
         for name, field in self.fields:
@@ -179,10 +182,12 @@ class FormGenerator(VueGenerator):
                 ]
                 if v
             ]
-            yield name, ", ".join(validators)
+            yield name, js_str(f'{{{", ".join(validators)}}}')
 
     def methods(self):
-        yield "submit()", """
+        yield "submit", js_func(
+            "",
+            """
           this.serverErrors=false;
           this.$v.form.$touch();
           if(this.$v.form.$error){
@@ -199,12 +204,18 @@ class FormGenerator(VueGenerator):
           } else {
            this.create();
            }
-        """
+        """,
+        )
         if self.retrieve_url:
-            yield "fetch(pk)", f"""
+            yield "fetch", js_func(
+                "pk",
+                f"""
             this.$http.get(`{self.retrieve_url}/${{pk}}/`).then(r => r.json()).then(r => {{this.form = r;}});
-            """
-            yield "update()", f"""
+            """,
+            )
+            yield "update", js_func(
+                "",
+                f"""
             this.$http.put(`{self.retrieve_url}/${{this.pk}}/`, {{...this.form}}).then(r => r.json()).then(
             r => {{
                 this.serverErrors = false;
@@ -219,9 +230,12 @@ class FormGenerator(VueGenerator):
                 this.$v.$touch();
             }}
             );
-            """
+            """,
+            )
         if self.list_url:
-            yield "create()", f""" 
+            yield "create", js_func(
+                "",
+                f""" 
             this.$http.post('{self.list_url}', {{...this.form}}).then(r => r.json()).then(
                 r => {{
                     this.serverErrors = false;
@@ -236,10 +250,8 @@ class FormGenerator(VueGenerator):
                     this.$v.$touch();
                 }}
                 );
-            """
-            yield "list(filters)", f"""this.$http.get('{self.list_url}', filters).then(r => r.json()).then(
-            r => {{this.results = r.results;}}
-            );"""
+            """,
+            )
 
     def error_messages(self):
         return {

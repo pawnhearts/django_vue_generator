@@ -2,7 +2,7 @@ from django.core.management.base import BaseCommand
 from django.core import management
 import importlib
 
-from django_vue_generator.forms import FormGenerator
+from django_vue_generator.forms import VueForm
 
 
 class Command(BaseCommand):
@@ -25,7 +25,7 @@ class Command(BaseCommand):
         mod, cls = args[0].rsplit(".", 1)
         mod = importlib.import_module(mod)
         obj = getattr(mod, cls)
-        generator = FormGenerator(obj)
+        generator = VueForm(obj)
         if options["write"]:
             with open(generator.filename, "w") as f:
                 f.write(generator.render())

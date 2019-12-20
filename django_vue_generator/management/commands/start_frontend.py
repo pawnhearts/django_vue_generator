@@ -14,7 +14,7 @@ from django_vue_generator.utils import (
     overwrite,
     set_yarn_path,
 )
-from django_vue_generator.forms import FormGenerator
+from django_vue_generator.forms import VueForm
 
 ESLINT_CONFIG = """{
     "env": {
@@ -163,7 +163,7 @@ class Command(BaseCommand):
 
         for viewset in ModelViewSet.__subclasses__():
             name = viewset().get_serializer_class().Meta.model._meta.model_name.title()
-            for GeneratorClass in [FormGenerator, ListGenerator]:
+            for GeneratorClass in [VueForm, ListGenerator]:
                 generator = GeneratorClass(viewset)
                 with overwrite(generator.filename) as f:
                     f.write(generator.render())

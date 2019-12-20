@@ -1,9 +1,9 @@
 from django.urls import get_resolver
 from rest_framework import serializers, pagination
-from django_vue_generator.vue import VueGenerator
+from django_vue_generator.vue import js_func, js_str, Vue
 
 
-class ListGenerator(VueGenerator):
+class ListGenerator(Vue):
     postfix = "List"
 
     def __init__(
@@ -29,9 +29,17 @@ class ListGenerator(VueGenerator):
         self.retrieve_url = retrieve_url and retrieve_url[0][0][0][0].rsplit("/", 2)[0]
         self.viewset = viewset
         serializer = viewset().get_serializer_class()
-        super().__init__(serializer)
+        self.serializer = serializer
+        self.model_name = self.serializer.Meta.model._meta.model_name
+        self.pk_name = self.serializer.Meta.model._meta.pk.name
+        self.component_name = f"{self.model_name.title()}{self.postfix}"
+        self.filename = f"frontend/src/components/{self.component_name}.vue"
+        self.fields = self.serializer().fields.items()
 
     def template(self):
+        return "".join(self._template())
+
+    def _template(self):
         yield f'<div class="{self.model_name}_list">'
         yield f"<{self.table_tag}>"
         yield f'<slot name="header" v-bind:object="object">'
@@ -68,24 +76,25 @@ class ListGenerator(VueGenerator):
         else:
             yield
 
-    def script(self):
-        yield "props: ['filters'],"
+    props = ["filters"]
 
-    def script_items(self):
-        yield "mounted()", """this.list(this.filters);"""
+    mounted = js_func("", """this.list(this.filters);""")
 
     def watch(self):
-        yield "filters:", """handler (newVal, oldVal) {
+        yield "filters", js_str(
+            """handler (newVal, oldVal) {
         if(this.page) this.page=1;
         if(this.offset) this.offset=0;
         this.list(newVal);
         }, deep: true"""
-        yield "page ()", "this.list(this.filters);"
-        yield "offset ()", "this.list(this.filters);"
+        )
+        yield "page", "this.list(this.filters);"
+        yield "offset", "this.list(this.filters);"
 
+    @property
     def data(self):
-        yield "objects", "[]"
-        yield "count", "0"
+        yield "objects", []
+        yield "count", 0
         if issubclass(self.viewset.pagination_class, pagination.PageNumberPagination):
             yield "page", 1
             yield "page_size", self.viewset.pagination_class.page_size
@@ -96,7 +105,9 @@ class ListGenerator(VueGenerator):
             yield "offset", 0
 
     def methods(self):
-        yield "list(filters)", f"""
+        yield "list", js_func(
+            "filters",
+            f"""
         let page_params=this.page?{{page:this.page}}:(this.limit?{{offset:this.offset, limit:this.limit}}:{{}});
         this.$http.get('{self.list_url}', {{params:{{...page_params, ...filters}}}}).then(r => r.json()).then(
         r => {{
@@ -107,13 +118,14 @@ class ListGenerator(VueGenerator):
             this.objects = r;
         }}
         }}
-        );"""
-        yield "pages()  ", """let res=[];
+        );""",
+        )
+        yield "pages", """let res=[];
         for(let i=1;i<=Math.ceil(this.count/this.page_size);i++){
         res.push(i);
         }
         return res;"""
-        yield "offsets()  ", """let res=[], j=1;
+        yield "offsets", """let res=[], j=1;
         for(let i=0;i<=this.count;i+=this.limit){
         res.push([i, j]);
         j++;
