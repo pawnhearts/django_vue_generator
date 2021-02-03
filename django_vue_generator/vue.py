@@ -137,7 +137,7 @@ class js_lambda(js_callable):
 class py_to_js(js_str):
     @staticmethod
     def call(d):
-        if isinstance(d, dict) or isinstance(d, types.GeneratorType):
+        if isinstance(d, (dict, types.GeneratorType)):
             return "{{{}}}".format(
                 ",".join(
                     f"{k}{'' if isinstance(v, js_func) else ': '}{v if isinstance(v, js_str) else py_to_js(v)}"
@@ -278,9 +278,8 @@ class Vue:
                         k: v if isinstance(v, js_callable) else js_func(default_args, v)
                         for k, v in iter_items(getattr(self, k))
                     }
-                if k in ("mounted", "created"):
-                    if not isinstance(v, js_callable):
-                        v = js_func((), v)
+                if k in ("mounted", "created") and not isinstance(v, js_callable):
+                    v = js_func((), v)
                 items.append(
                     f"""{k}{'' if isinstance(v, js_callable) else ': '}{py_to_js(v)}"""
                 )
