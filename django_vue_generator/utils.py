@@ -71,16 +71,15 @@ def set_yarn_path():
 class Yarn:
     def __init__(self, use_sudo=False):
         self.use_sudo = use_sudo
-        if not run("which vue", True):
-            if not run("which yarn", True):
-                fail(
-                    "which npm", silent=True, msg="Please install yarn or at least npm"
-                )
-                print(
-                    "Yarn not installed! Please install it first with your package-manager.\
+        if not run("which vue", True) and not run("which yarn", True):
+            fail(
+                "which npm", silent=True, msg="Please install yarn or at least npm"
+            )
+            print(
+                "Yarn not installed! Please install it first with your package-manager.\
                 Trying to install it via sudo npm i -g yarn"
-                )
-                fail("sudo npm i -g yarn")
+            )
+            fail("sudo npm i -g yarn")
         yarn_path = ":".join(
             os.popen("yarn global bin && yarn bin").read().splitlines()
         )

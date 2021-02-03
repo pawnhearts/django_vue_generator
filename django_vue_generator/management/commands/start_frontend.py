@@ -70,16 +70,15 @@ export default {
 
 def prepare(force=False, sudo=False):
     with cd_back():
-        if not run("which vue", True):
-            if not run("which yarn", True):
-                fail(
-                    "which npm", silent=True, msg="Please install yarn or at least npm"
-                )
-                print(
-                    "Yarn not installed! Please install it first with your package-manager.\
+        if not run("which vue", True) and not run("which yarn", True):
+            fail(
+                "which npm", silent=True, msg="Please install yarn or at least npm"
+            )
+            print(
+                "Yarn not installed! Please install it first with your package-manager.\
                 Trying to install it via sudo npm i -g yarn"
-                )
-                fail("sudo npm i -g yarn")
+            )
+            fail("sudo npm i -g yarn")
         if not run(r"yarn global list|grep vue\/cli", True):
             if not sudo:
                 run("mkdir -p ~/.yarn-global")
