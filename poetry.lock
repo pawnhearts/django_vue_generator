@@ -64,7 +64,7 @@ bcrypt = ["bcrypt"]
 
 [[package]]
 name = "django-filter"
-version = "2.2.0"
+version = "2.4.0"
 description = "Django-filter is a reusable Django application for allowing users to filter querysets dynamically."
 category = "main"
 optional = false
@@ -75,7 +75,7 @@ files = [
 ]
 
 [package.dependencies]
-Django = ">=1.11"
+Django = ">=2.2"
 
 [[package]]
 name = "djangorestframework"
@@ -145,7 +145,7 @@ dev = ["pre-commit", "tox"]
 
 [[package]]
 name = "py"
-version = "1.8.0"
+version = "1.11.0"
 description = "library with cross-python path, ini-parsing, io, code, log facilities"
 category = "dev"
 optional = false
